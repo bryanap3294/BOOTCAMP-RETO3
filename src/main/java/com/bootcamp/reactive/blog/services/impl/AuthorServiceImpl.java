@@ -11,6 +11,10 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
+
 @Service
 public class AuthorServiceImpl implements AuthorService {
 
@@ -55,18 +59,18 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public Mono<Author> saveWithValidation(Author author) {
 
-//        return this.authorRepository.existsByEmail(author.getEmail())
-//                .flatMap(exists->
-//                        {
-//                            return exists ? Mono.empty():this.authorRepository.save(author);
-//                        });
-
+        LocalDate curDate = LocalDate.now();
+        LocalDate birthDay = LocalDate.ofInstant(author.getBirthDate().toInstant(), ZoneId.systemDefault());
         return this.authorRepository.existsByEmail(author.getEmail())
                 .flatMap(exists->
                 {
-                    return !exists ? this.authorRepository.save(author): Mono.error(new AuthorExistsException("Author exists"));
+                    if(!exists){
+                        var age = Period.between(birthDay,curDate).getYears();
+                        return (age>18)? this.authorRepository.save(author) : Mono.error(new AuthorExistsException("El author debe tener mas de 18 años"));
+                    }else{
+                    return Mono.error(new AuthorExistsException("Author exists"));
+                    }
                 });
-
     }
 
     @Override

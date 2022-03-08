@@ -10,6 +10,12 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Calendar;
+import java.util.Date;
+
 @Service
 public class PostServiceImpl implements PostService {
 
@@ -21,11 +27,22 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Mono<Post> save(Post post) {
-
+        Date currentDate = new Date();
         return this.blogService.findById(post.getBlogId()).flatMap(s ->{
-            return  (s.getStatus().equals("ACTIVO"))? this.postRepository.save(post) : Mono.error(new AuthorExistsException("El blog debe estar en estado activo"));
+            //post.setDate(currentDate);
+            if(s.getStatus().equals("ACTIVO")){
+                return postRepository.findByBlogId(post.getBlogId()).filter(p -> {
+                    LocalDate localDate = p.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                    LocalDate currentDay = currentDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                    return localDate.isEqual(currentDay);
+                }).hasElements().flatMap(w->{
+                    post.setDate(currentDate);
+                    return !w? this.postRepository.save(post) : Mono.error(new AuthorExistsException("Solo un POST por dia"));
+                });
+            }else{
+                return Mono.error(new AuthorExistsException("El blog debe estar en estado activo"));
+            }
         });
-        //return this.postRepository.save(post);
     }
 
     @Override
