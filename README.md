@@ -1,16 +1,7 @@
-# bootcamp-reactive-blog
+# RETO 3 JAVA
 
-## Create docker image "docker build"
-`docker build -t bootcamp-blog:0.0.1 .`
+## CONSIDERACIONES
 
-`docker image ls`
+`Para crear un POST no es necesario poner el campo 'date' como input en el JSON ya que se le asignará la fecha del sistema.`
 
-## Crear contenedor "docker run"
-
-`docker run -d --name bootcamp-blog-dev -p 9090:8080 bootcamp-blog:0.0.1`
-
-## Comandos docker
-
-https://dockerlabs.collabnix.com/docker/cheatsheet/
-
-
+`En la Carpeta Resources, se añadio el POSTMAN para que lo pueda importar`
